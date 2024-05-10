@@ -6,7 +6,7 @@ impl DiscordApi {
         &self,
         channel_id: u64,
         wait_for_ratelimit: bool,
-    ) -> Result<u64, DiscordApiError> {
+    ) -> Result<(u64, String), DiscordApiError> {
         let response = self
             .request_with_relative_url_and_auth_header(
                 Method::GET,
@@ -30,12 +30,21 @@ impl DiscordApi {
                     })?;
 
                 if let Some(channels) = json_data.as_object() {
-                    if let Some(last_message_id) = channels
+                    let last_message_id = channels
                         .get("last_message_id")
                         .and_then(|id_value| id_value.as_str())
-                        .and_then(|id_string| id_string.parse::<u64>().ok())
-                    {
-                        return Ok(last_message_id);
+                        .and_then(|id_string| id_string.parse::<u64>().ok());
+
+                    let channel_name = channels
+                        .get("name")
+                        .and_then(|name_value| name_value.as_str());
+
+                    if let Some(last_message_id) = last_message_id {
+                        if let Some(channel_name) = channel_name {
+                            return Ok((last_message_id, channel_name.to_string()));
+                        }
+
+                        return Err(DiscordApiError::NotFound(FoundableStuff::ChannelName));
                     }
 
                     return Err(DiscordApiError::NotFound(FoundableStuff::Message(None)));

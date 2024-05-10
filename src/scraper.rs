@@ -58,12 +58,13 @@ impl Scraper {
     }
 
     pub async fn scrape_channel(&self, channel_id: u64) -> Result<(), ScraperError> {
-        let mut last_message_id = self
+        let (channel_last_msg_id, channel_name) = self
             .discord_api_client
             .get_last_msg_in_channel(channel_id, true)
             .await
             .map_err(ScraperError::DiscordApiError)?;
 
+        let mut last_message_id = channel_last_msg_id;
         let start_timestamp = chrono::Local::now().timestamp();
 
         loop {
@@ -85,7 +86,7 @@ impl Scraper {
                         break;
                     }
 
-                    let output_file_name = format!("{channel_id}.jsonl");
+                    let output_file_name = format!("{channel_name}.jsonl");
                     let result = append_json_lines(output_file_name, messages);
 
                     if let Err(error) = result {

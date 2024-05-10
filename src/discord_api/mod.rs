@@ -37,13 +37,11 @@ pub enum DiscordApiError {
 
     //#[error("Ratelimited, {0:#?}")]
     //RateLimited(Option<DiscordApiRatelimitInfo>),
-
     #[error(transparent)]
     ParseResponse(ParseError),
 
     #[error("Unexpected status code {0}, see: {1:#?}")]
     UnexpectedResponseStatusCode(u16, Option<reqwest::Response>),
-
     //#[error("Unexpected error: {0}\n\n{1:#?}")]
     //Unexpected(String, Option<reqwest::Error>),
 }
@@ -51,6 +49,7 @@ pub enum DiscordApiError {
 #[derive(Debug)]
 pub enum FoundableStuff {
     Channel(Option<u64>),
+    ChannelName,
     Message(Option<u64>),
 }
 
