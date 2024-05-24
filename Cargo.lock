@@ -749,6 +749,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "oretary-rust-scraper"
+version = "0.0.0"
+dependencies = [
+ "async-recursion",
+ "chrono",
+ "clap",
+ "color-eyre",
+ "reqwest",
+ "serde",
+ "serde-jsonlines",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "tracing-test",
+]
+
+[[package]]
 name = "overload"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1084,25 +1103,6 @@ checksum = "ce305eb0b4296696835b71df73eb912e0f1ffd2556a501fcede6e0c50349191c"
 dependencies = [
  "libc",
  "windows-sys 0.52.0",
-]
-
-[[package]]
-name = "spldcrdchlscrp"
-version = "0.0.0"
-dependencies = [
- "async-recursion",
- "chrono",
- "clap",
- "color-eyre",
- "reqwest",
- "serde",
- "serde-jsonlines",
- "serde_json",
- "thiserror",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "tracing-test",
 ]
 
 [[package]]

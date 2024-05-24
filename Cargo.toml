@@ -1,5 +1,5 @@
 [package]
-name = "spldcrdchlscrp"
+name = "oretary-rust-scraper"
 version = "0.0.0"
 edition = "2021"
 

@@ -23,7 +23,7 @@ async fn main() -> color_eyre::Result<()> {
     subscriber::set_global_default(subscriber)
         .expect("Failed to set the global default tracing subscriber");
 
-    spldcrdchlscrp::run_cli().await?;
+    oretary_rust_scraper::run_cli().await?;
 
     Ok(())
 }

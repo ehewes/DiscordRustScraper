@@ -1,8 +1,8 @@
 use super::{DiscordApi, DiscordApiError, ParseError};
 use reqwest::Method;
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Message {
     pub author_id: u64,
     pub message_id: u64,
