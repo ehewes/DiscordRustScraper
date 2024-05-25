@@ -1,5 +1,3 @@
-# OretaryRustScraper
-
 ### Commands & Usage:
 
 ## scrape
