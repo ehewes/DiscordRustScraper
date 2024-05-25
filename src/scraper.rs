@@ -18,30 +18,21 @@ pub enum ScraperError {
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum FileConversionError {
+pub enum FileConversionError<'a> {
     #[error("Failed to read the contents of the file located at `{0}`, see: {1:#?}")]
-    ReadFileContents(PathBuf, io::Error),
+    ReadFileContents(&'a Path, io::Error),
 
     #[error("Failed to write into the file at `{0}`, see: {1:#?}")]
     WriteIntoFile(PathBuf, io::Error),
 
-    #[error(transparent)]
-    InvalidPath(InvalidPathError),
+    #[error("Provided path doesn't have a file name `{0}`")]
+    NoFileName(&'a Path),
 
     #[error("Failed to create an output file at `{0}`, see: {1:#?}")]
     CreateOutputFile(PathBuf, io::Error),
 
     #[error("Failed to serialize the items from jsonl into json, see: {0:#?}")]
     SerializeJsonlItems(serde_json::Error),
-}
-
-#[derive(Debug, thiserror::Error)]
-pub enum InvalidPathError {
-    #[error("Provided path doesn't have a file stem `{0}`")]
-    NoFileStem(PathBuf),
-
-    #[error("Provided path doesn't have a parent directory `{0}`")]
-    NoParentDir(PathBuf),
 }
 
 impl Scraper {
@@ -131,11 +122,13 @@ impl Scraper {
 
         let jsonl_file_path = PathBuf::from(output_file_name);
 
+        let jsonl_file_path_slice = jsonl_file_path.as_path();
+
         match convert_jsonl_file_into_json(&jsonl_file_path).await {
             Ok(json_file_path) => Ok((json_file_path, time_it_took_in_secs)),
             Err(error) => {
                 tracing::error!(
-                    "Failed to convert the jsonl file at `{jsonl_file_path:?}` into json. See: {error:#?}`"
+                    "Failed to convert the jsonl file at `{jsonl_file_path_slice:?}` into json. See: {error:#?}`"
                 );
 
                 Ok((jsonl_file_path, time_it_took_in_secs))
@@ -145,53 +138,39 @@ impl Scraper {
 }
 
 pub async fn convert_jsonl_file_into_json(path: &Path) -> Result<PathBuf, FileConversionError> {
-    let jsonl_file_path_buf = path.to_path_buf();
-    let jsonl_file = File::open(path).await.map_err(|error| {
-        FileConversionError::ReadFileContents(jsonl_file_path_buf.clone(), error)
-    })?;
+    let jsonl_file = File::open(path)
+        .await
+        .map_err(|error| FileConversionError::ReadFileContents(path, error))?;
 
-    if let Some(jsonl_file_stem) = path.file_stem() {
-        if let Some(dir_path) = jsonl_file_path_buf.parent() {
-            let jsonl_file_stem_string = jsonl_file_stem.to_string_lossy();
-            let json_file_name = format!("{jsonl_file_stem_string}.json");
-            let mut json_file_path = dir_path.to_path_buf();
+    if path.file_name().is_some() {
+        let mut json_file_path = path.to_path_buf();
 
-            json_file_path.push(json_file_name);
+        json_file_path.set_extension("json");
 
-            let mut jsonl_lines = BufReader::new(jsonl_file).lines();
-            let mut json_file = File::create(json_file_path.clone())
-                .await
-                .map_err(|error| {
-                    FileConversionError::CreateOutputFile(json_file_path.clone(), error)
-                })?;
+        let mut jsonl_lines = BufReader::new(jsonl_file).lines();
 
-            let mut json_value_data: Vec<Value> = Vec::new();
+        return match File::create(&json_file_path).await {
+            Err(error) => Err(FileConversionError::CreateOutputFile(json_file_path, error)),
+            Ok(mut json_file) => {
+                let mut json_value_data: Vec<Value> = Vec::new();
 
-            while let Ok(Some(line)) = jsonl_lines.next_line().await {
-                if let Ok(value) = serde_json::from_str::<Value>(&line) {
-                    json_value_data.push(value);
+                while let Ok(Some(line)) = jsonl_lines.next_line().await {
+                    if let Ok(value) = serde_json::from_str::<Value>(&line) {
+                        json_value_data.push(value);
+                    }
                 }
+
+                let json_string = serde_json::to_string(&json_value_data)
+                    .map_err(FileConversionError::SerializeJsonlItems)?;
+
+                if let Err(error) = json_file.write_all(json_string.as_bytes()).await {
+                    return Err(FileConversionError::WriteIntoFile(json_file_path, error));
+                }
+
+                return Ok(json_file_path);
             }
-
-            let json_string = serde_json::to_string_pretty(&json_value_data)
-                .map_err(FileConversionError::SerializeJsonlItems)?;
-
-            json_file
-                .write_all(json_string.as_bytes())
-                .await
-                .map_err(|error| {
-                    FileConversionError::WriteIntoFile(json_file_path.clone(), error)
-                })?;
-
-            return Ok(json_file_path);
-        }
-
-        Err(FileConversionError::InvalidPath(
-            InvalidPathError::NoParentDir(jsonl_file_path_buf),
-        ))
-    } else {
-        Err(FileConversionError::InvalidPath(
-            InvalidPathError::NoFileStem(jsonl_file_path_buf),
-        ))
+        };
     }
+
+    Err(FileConversionError::NoFileName(path))
 }
