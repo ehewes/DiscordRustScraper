@@ -22,7 +22,9 @@ struct ConvertToJson {
 
 #[derive(Parser)]
 struct Scrape {
+    #[clap(long = "bot_token")]
     bot_token: String,
+    #[clap(long = "channel_ids")]
     channel_ids: Vec<u64>,
 }
 
