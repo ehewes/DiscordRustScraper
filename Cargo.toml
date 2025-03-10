@@ -8,8 +8,8 @@ description = "DiscordRustScraper is a powerful Discord data scraper built in Ru
 readme = "README.md"
 homepage = "https://github.com/ehewes/DiscordRustScraper"
 repository = "https://github.com/ehewes/DiscordRustScraper"
-keywords = ["cli", "discord", "scraper", "discordscraper"]
-categories = ["command-line-utilities", "discord"]
+keywords = ["cli", "discord", "scraper", "discordscraper", "bot"]
+categories = ["command-line-utilities"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
