@@ -1,5 +1,10 @@
 # DiscordRustScraper
 [![Rust-Scraper-Bannerwide.png](https://i.postimg.cc/CxSB8GDM/Rust-Scraper-Bannerwide.png)](https://postimg.cc/2V9SRB2g)
+<p align="center">
+	<img alt="Crates.io Downloads" src="https://img.shields.io/crates/d/discord_rust_scraper?label=crates.io%20downloads" />
+</p>
+
+---
 
 ## Description
 DiscordRustScraper is a powerful Discord data scraper built in Rust, designed to extract and format channel data for further analysis. It efficiently scrapes message history from specified channels and outputs it in a clean JSON format for easy processing.
