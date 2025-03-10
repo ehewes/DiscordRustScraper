@@ -1,7 +1,15 @@
 [package]
-name = "oretary-rust-scraper"
-version = "1.0.0"
+name = "discord_rust_scraper"
+version = "1.0.1"
 edition = "2021"
+authors = ["ehewes, bordomantra"]
+license = "MIT"
+description = "DiscordRustScraper is a powerful Discord data scraper built in Rust, designed to extract and format channel data for further analysis. It efficiently scrapes message history from specified channels and outputs it in a clean JSON format for easy processing."
+readme = "README.md"
+homepage = "https://github.com/ehewes/DiscordRustScraper"
+repository = "https://github.com/ehewes/DiscordRustScraper"
+keywords = ["cli", "discord", "scraper", "discordscraper"]
+categories = ["command-line-utilities", "discord"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
