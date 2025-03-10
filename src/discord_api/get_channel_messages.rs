@@ -7,6 +7,7 @@ pub struct Message {
     pub author_id: u64,
     pub message_id: u64,
     pub message: String,
+    pub has_media: bool,
 }
 
 impl DiscordApi {
@@ -44,28 +45,33 @@ impl DiscordApi {
                     message_array.iter().for_each(|message_object| {
                         let message_id = message_object
                             .get("id")
-                            .and_then(|message_id| message_id.as_str())
-                            .and_then(|message_id| message_id.parse::<u64>().ok());
+                            .and_then(|id| id.as_str())
+                            .and_then(|id| id.parse::<u64>().ok());
 
                         let author_id = message_object
                             .get("author")
                             .and_then(|author| author.as_object())
                             .and_then(|author| author.get("id"))
-                            .and_then(|author_id| author_id.as_str())
-                            .and_then(|author_id| author_id.parse::<u64>().ok());
+                            .and_then(|id| id.as_str())
+                            .and_then(|id| id.parse::<u64>().ok());
 
                         let string_content = message_object
                             .get("content")
                             .and_then(|content| content.as_str())
                             .map(|content| content.to_string());
 
-                        if let (Some(message_id), Some(author_id), Some(string_content)) =
-                            (message_id, author_id, string_content)
-                        {
+                        let has_media = !message_object
+                            .get("attachments")
+                            .and_then(|attach| attach.as_array())
+                            .map(|a| a.is_empty())
+                            .unwrap_or(true);
+
+                        if let (Some(message_id), Some(author_id), Some(string_content)) = (message_id, author_id, string_content) {
                             let message_struct = Message {
                                 author_id,
                                 message_id,
                                 message: string_content,
+                                has_media,
                             };
 
                             messages_vec.push(message_struct);

@@ -46,6 +46,7 @@ pub enum DiscordApiError {
     //Unexpected(String, Option<reqwest::Error>),
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub enum FoundableStuff {
     Channel(Option<u64>),
