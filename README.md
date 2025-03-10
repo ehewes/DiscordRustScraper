@@ -4,13 +4,11 @@
 ## Description
 DiscordRustScraper is a powerful Discord data scraper built in Rust, designed to extract and format channel data for further analysis. It efficiently scrapes message history from specified channels and outputs it in a clean JSON format for easy processing.
 
-### Commands & Usage
+## Commands & Usage
 
 #### Scrape
-__Usage__ 
-``cargo run -- scrape --bot_token <BOT_TOKEN> --channel_ids [CHANNEL_IDS]``
-__Example__
-``cargo run -- scrape --bot_token "your_bot_token" --channel_ids 659069446438125570 806378740917469234``
+- Usage : ``cargo run -- scrape --bot_token <BOT_TOKEN> --channel_ids [CHANNEL_IDS]``
+- Example : ``cargo run -- scrape --bot_token "your_bot_token" --channel_ids 659069446438125570 806378740917469234``
 
 #### convert-to-json
 
