@@ -12,4 +12,4 @@
 - Usage: oretary-rust-scraper convert-to-json <INPUT_FILE>
 - Example: oretary-rust-scraper convert-to-json 999.jsonl
 
-[![Rust-Scraper-Banner.png](https://i.postimg.cc/NjSDYCSC/Rust-Scraper-Banner.png)](https://postimg.cc/LJkL3DHj)
+[![Rust-Scraper-Bannerwide.png](https://i.postimg.cc/CxSB8GDM/Rust-Scraper-Bannerwide.png)](https://postimg.cc/2V9SRB2g)
