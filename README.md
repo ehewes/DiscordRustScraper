@@ -1,15 +1,19 @@
-### Commands & Usage:
+# DiscordRustScraper
+[![Rust-Scraper-Bannerwide.png](https://i.postimg.cc/CxSB8GDM/Rust-Scraper-Bannerwide.png)](https://postimg.cc/2V9SRB2g)
 
-## scrape
+## Description
+DiscordRustScraper is a powerful Discord data scraper built in Rust, designed to extract and format channel data for further analysis. It efficiently scrapes message history from specified channels and outputs it in a clean JSON format for easy processing.
 
-- Usage: oretary-rust-scraper scrape <BOT_TOKEN> [CHANNEL_IDS]
-- Example: oretary-rust-scraper scrape TOKEN 214987515 120994851 12512598
+### Commands & Usage
 
-- cargo run -- scrape --bot_token "your_token_here" --channel_ids 723226579177570404
+#### scrape
 
-## convert-to-json
+- Usage: ``cargo run -- scrape --bot_token <BOT_TOKEN> --channel_ids [CHANNEL_IDS]``
+- Example: ``cargo run -- scrape --bot_token "your_bot_token" --channel_ids 659069446438125570 806378740917469234``
+
+#### convert-to-json
 
 - Usage: oretary-rust-scraper convert-to-json <INPUT_FILE>
 - Example: oretary-rust-scraper convert-to-json 999.jsonl
 
-[![Rust-Scraper-Bannerwide.png](https://i.postimg.cc/CxSB8GDM/Rust-Scraper-Bannerwide.png)](https://postimg.cc/2V9SRB2g)
+
