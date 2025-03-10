@@ -11,8 +11,7 @@ DiscordRustScraper is a powerful Discord data scraper built in Rust, designed to
 - Example : ``cargo run -- scrape --bot_token "your_bot_token" --channel_ids 659069446438125570 806378740917469234``
 
 #### convert-to-json
-
-- Usage: oretary-rust-scraper convert-to-json <INPUT_FILE>
-- Example: oretary-rust-scraper convert-to-json 999.jsonl
+- Usage: ``cargo run -- convert-to-json <INPUT_FILE>``
+- Example: ``cargo run -- convert-to-json on-topic.jsonl``
 
 
