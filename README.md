@@ -21,7 +21,7 @@ DiscordRustScraper is a powerful Discord data scraper built in Rust, designed to
 
 #### sql (optional)
 The SQL argument provides an optional feature that enables the use of a SQL database to store messages instead of the default storage method, by passing through a connection string. This is a more efficient way of storing data compared to JSONs.
-- Usage : ``cargo run -- scrape --bot_token <BOT_TOKEN> --channel_ids [CHANNEL_IDS] --sql mysql://username:password@127.0.0.1:3306/database``
+- Usage : ``cargo run -- scrape --bot_token <BOT_TOKEN> --channel_ids [CHANNEL_IDS] --sql <CONNECTION_STRING>``
 - Example : ``cargo run -- scrape --bot_token "your_bot_token" --channel_ids 659069446438125570 806378740917469234 --sql mysql://username:password@127.0.0.1:3306/database``
 
 ##### Schema
