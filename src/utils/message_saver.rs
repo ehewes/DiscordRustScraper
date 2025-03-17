@@ -1,7 +1,7 @@
 use crate::discord_api::Message;
 use async_trait::async_trait;
 use color_eyre::eyre::Result;
-use tokio::io::{AsyncWriteExt, BufWriter}; // Use Tokio's BufWriter and AsyncWriteExt
+use tokio::io::{AsyncWriteExt, BufWriter};
 use tokio::fs::{File, OpenOptions};
 
 pub enum SaveTarget {

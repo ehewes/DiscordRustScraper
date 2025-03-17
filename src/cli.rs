@@ -28,7 +28,7 @@ struct Scrape {
     #[clap(long = "channel_ids", value_parser, num_args = 1..)]
     channel_ids: Vec<u64>,
     #[clap(long, value_parser)]
-    sql: Option<String>, // Database URL for SQL saving
+    sql: Option<String>,
 }
 
 pub async fn run() -> eyre::Result<()> {
