@@ -36,4 +36,3 @@ CREATE TABLE messages (
     PRIMARY KEY (message_id)
 );
 ```
--# The next update i will include a way to automatically set up the database.
