@@ -4,6 +4,7 @@ use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Message {
+    pub channel_id: u64,
     pub author_id: u64,
     pub message_id: u64,
     pub message: String,
@@ -68,6 +69,7 @@ impl DiscordApi {
 
                         if let (Some(message_id), Some(author_id), Some(string_content)) = (message_id, author_id, string_content) {
                             let message_struct = Message {
+                                channel_id,
                                 author_id,
                                 message_id,
                                 message: string_content,

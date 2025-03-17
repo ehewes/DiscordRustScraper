@@ -2,6 +2,7 @@ use std::env;
 use tracing::{subscriber, Level};
 use tracing_subscriber::FmtSubscriber;
 
+
 #[tokio::main]
 async fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
