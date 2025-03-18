@@ -97,7 +97,8 @@ impl Scraper {
 
         let mut saver: Box<dyn MessageSaver + Send + Sync> = match save_target {
             SaveTarget::Jsonl => {
-                let output_file_name = format!("{channel_name}.jsonl");
+                std::fs::create_dir_all("storage").unwrap();
+                let output_file_name = format!("storage/{channel_name}.jsonl");
                 Box::new(JsonlSaver::new(&output_file_name).await?)
             }
             SaveTarget::Sql(database_url) => Box::new(SqlSaver::new(database_url).await?),
