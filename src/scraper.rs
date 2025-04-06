@@ -1,10 +1,14 @@
-use crate::discord_api::{DiscordApi, DiscordApiError, Message};
+use crate::discord_api::{DiscordApi, DiscordApiError};
 use crate::utils::message_saver::{JsonlSaver, MessageSaver, SaveTarget, SqlSaver};
 use async_recursion::async_recursion;
 use serde_json::Value;
 use std::io;
 use std::path::{Path, PathBuf};
-use tokio::{fs::File, io::AsyncBufReadExt, io::AsyncWriteExt, io::BufReader, time};
+use tokio::{
+    fs::File,
+    io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
+    time,
+};
 
 const SECONDS_TO_WAIT_IN_CASE_OF_HTTP_503: u8 = 20;
 
@@ -48,28 +52,32 @@ impl Scraper {
             discord_api_client: DiscordApi::new(bot_token, personal),
         }
     }
-
     #[async_recursion]
     async fn scrape_msgs_before_msg(
         &self,
         channel_id: u64,
         message_id: u64,
-    ) -> Result<Vec<Message>, ScraperError> {
-        let possible_messages = self
-            .discord_api_client
-            .get_channel_msgs_before_msg(channel_id, message_id, true)
-            .await;
-
+        use_personal: bool,
+    ) -> Result<Vec<crate::discord_api::Message>, ScraperError> {
+        let possible_messages = if message_id == 0 {
+            self.discord_api_client.get_channel_msgs(channel_id, use_personal).await
+        } else {
+            self.discord_api_client
+                .get_channel_msgs_before_msg(channel_id, message_id, use_personal)
+                .await
+        };
         match possible_messages {
             Err(error) => match error {
                 DiscordApiError::UnexpectedResponseStatusCode(status_code, response) => {
                     if status_code == 503 {
-                        tracing::warn!("Received HTTP 503 from the Discord API, waiting {SECONDS_TO_WAIT_IN_CASE_OF_HTTP_503} seconds before retrying. See: {response:#?}");
-                        time::sleep(time::Duration::from_secs(
-                            SECONDS_TO_WAIT_IN_CASE_OF_HTTP_503 as u64,
-                        ))
+                        tracing::warn!(
+                            "Received HTTP 503 from the Discord API, waiting {} seconds before retrying. See: {:#?}",
+                            SECONDS_TO_WAIT_IN_CASE_OF_HTTP_503,
+                            response
+                        );
+                        time::sleep(time::Duration::from_secs(SECONDS_TO_WAIT_IN_CASE_OF_HTTP_503 as u64))
                             .await;
-                        return self.scrape_msgs_before_msg(channel_id, message_id).await;
+                        return self.scrape_msgs_before_msg(channel_id, message_id, use_personal).await;
                     }
                     Err(ScraperError::DiscordApiError(
                         DiscordApiError::UnexpectedResponseStatusCode(status_code, response),
@@ -86,13 +94,26 @@ impl Scraper {
         channel_id: u64,
         save_target: &SaveTarget,
     ) -> Result<(Option<PathBuf>, u64), ScraperError> {
-        let (channel_last_msg_id, channel_name) = self
-            .discord_api_client
-            .get_last_msg_in_channel(channel_id, true)
-            .await
-            .map_err(ScraperError::DiscordApiError)?;
+        let (channel_last_msg_id, channel_name) =
+            match self.discord_api_client.get_last_msg_in_channel(channel_id, true).await {
+                Ok(data) => data,
+                Err(e) => {
+                    if e.to_string().contains("ChannelName") {
+                        tracing::warn!(
+                            "Channel name not found for channel {}: falling back to DM mode.",
+                            channel_id
+                        );
+                        let channel_last_msg_id = match self.discord_api_client.get_last_msg_in_channel(channel_id, false).await {
+                            Ok((id, _)) => id,
+                            Err(_) => 0,
+                        };
+                        (channel_last_msg_id, format!("dm_{}", channel_id))
+                    } else {
+                        return Err(ScraperError::DiscordApiError(e));
+                    }
+                }
+            };
 
-        let mut last_message_id = channel_last_msg_id;
         let start_timestamp = chrono::Local::now().timestamp();
 
         let mut saver: Box<dyn MessageSaver + Send + Sync> = match save_target {
@@ -104,25 +125,21 @@ impl Scraper {
             SaveTarget::Sql(database_url) => Box::new(SqlSaver::new(database_url).await?),
         };
 
-        loop {
-            match self.scrape_msgs_before_msg(channel_id, last_message_id).await {
-                Err(error) => {
-                    tracing::error!(
-                        "Failed to scrape messages before message ID `{last_message_id}`: {error:#?}"
-                    );
-                }
-                Ok(messages) => {
-                    if let Some(last_message) = messages.last() {
-                        last_message_id = last_message.message_id;
-                    } else {
-                        tracing::info!("No more messages to scrape.");
-                        break;
-                    }
+        let mut last_message_id = channel_last_msg_id;
+        let format_request = !channel_name.starts_with("dm_");
 
-                    if let Err(error) = saver.save_messages(&messages).await {
-                        tracing::error!("Failed to save message batch: {error:#?}");
-                    }
-                }
+        loop {
+            let messages = self
+                .scrape_msgs_before_msg(channel_id, last_message_id, format_request)
+                .await?;
+            if let Some(last_message) = messages.last() {
+                last_message_id = last_message.message_id;
+            } else {
+                tracing::info!("No more messages to scrape.");
+                break;
+            }
+            if let Err(error) = saver.save_messages(&messages).await {
+                tracing::error!("Failed to save message batch: {:#?}", error);
             }
         }
 
