@@ -36,16 +36,16 @@ pub enum FileConversionError {
 
 #[derive(Debug, thiserror::Error)]
 pub enum InvalidPathError {
-    #[error("Provided path doesn't have a file stem `{0}`")]
+    #[error("Provided path doesn\\'t have a file stem `{0}`")]
     NoFileStem(PathBuf),
-    #[error("Provided path doesn't have a parent directory `{0}`")]
+    #[error("Provided path doesn\\'t have a parent directory `{0}`")]
     NoParentDir(PathBuf),
 }
 
 impl Scraper {
-    pub fn new<S: ToString>(bot_token: S) -> Self {
+    pub fn new<S: ToString>(bot_token: S, personal: bool) -> Self {
         Self {
-            discord_api_client: DiscordApi::new(bot_token),
+            discord_api_client: DiscordApi::new(bot_token, personal),
         }
     }
 
@@ -68,7 +68,7 @@ impl Scraper {
                         time::sleep(time::Duration::from_secs(
                             SECONDS_TO_WAIT_IN_CASE_OF_HTTP_503 as u64,
                         ))
-                        .await;
+                            .await;
                         return self.scrape_msgs_before_msg(channel_id, message_id).await;
                     }
                     Err(ScraperError::DiscordApiError(
@@ -98,7 +98,7 @@ impl Scraper {
         let mut saver: Box<dyn MessageSaver + Send + Sync> = match save_target {
             SaveTarget::Jsonl => {
                 std::fs::create_dir_all("storage").unwrap();
-                let output_file_name = format!("storage/{channel_name}.jsonl");
+                let output_file_name = format!("storage/{}.jsonl", channel_name);
                 Box::new(JsonlSaver::new(&output_file_name).await?)
             }
             SaveTarget::Sql(database_url) => Box::new(SqlSaver::new(database_url).await?),
@@ -126,9 +126,10 @@ impl Scraper {
             }
         }
 
-        let time_it_took_in_secs = ((chrono::Local::now().timestamp() - start_timestamp) / 60) as u64;
+        let time_it_took_in_secs =
+            ((chrono::Local::now().timestamp() - start_timestamp) / 60) as u64;
         let output_path = if let SaveTarget::Jsonl = save_target {
-            Some(PathBuf::from(format!("{channel_name}.jsonl")))
+            Some(PathBuf::from(format!("{}.jsonl", channel_name)))
         } else {
             None
         };
@@ -146,7 +147,7 @@ pub async fn convert_jsonl_file_into_json(path: &Path) -> Result<PathBuf, FileCo
     if let Some(jsonl_file_stem) = path.file_stem() {
         if let Some(dir_path) = jsonl_file_path_buf.parent() {
             let jsonl_file_stem_string = jsonl_file_stem.to_string_lossy();
-            let json_file_name = format!("{jsonl_file_stem_string}.json");
+            let json_file_name = format!("{}.json", jsonl_file_stem_string);
             let mut json_file_path = dir_path.to_path_buf();
 
             json_file_path.push(json_file_name);
