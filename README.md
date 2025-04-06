@@ -19,7 +19,7 @@ DiscordRustScraper is a powerful Discord data scraper built in Rust, designed to
 - Usage: ``cargo run -- convert-to-json <INPUT_FILE>``
 - Example: ``cargo run -- convert-to-json on-topic.jsonl``
 
-#### personal
+#### personal (optional)
 The personal argument allows you to scrape channels from your own account, which is useful for gathering data from private channels or servers where you have access. This feature is particularly beneficial for users who want to analyze their own messages or those in private channels. 
 <br>
 <br>
