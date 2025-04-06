@@ -440,7 +440,7 @@ dependencies = [
 
 [[package]]
 name = "discord_rust_scraper"
-version = "1.0.3"
+version = "1.0.4"
 dependencies = [
  "async-recursion",
  "async-trait",
