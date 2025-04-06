@@ -2,3 +2,9 @@ target/
 *.jsonl
 *.json
 /storage
+*.sqlite
+*.db
+*.log
+*.xml
+*.iml
+.idea/

@@ -29,6 +29,9 @@ struct Scrape {
     channel_ids: Vec<u64>,
     #[clap(long, value_parser)]
     sql: Option<String>,
+
+    #[clap(long)]
+    personal: bool,
 }
 
 pub async fn run() -> eyre::Result<()> {
@@ -36,7 +39,7 @@ pub async fn run() -> eyre::Result<()> {
 
     match cli.command {
         Command::Scrape(arguments) => {
-            let scraper = Scraper::new(arguments.bot_token);
+            let scraper = Scraper::new(arguments.bot_token, arguments.personal);
             let save_target = if let Some(database_url) = arguments.sql {
                 SaveTarget::Sql(database_url)
             } else {
@@ -44,9 +47,8 @@ pub async fn run() -> eyre::Result<()> {
             };
 
             for channel_id in arguments.channel_ids {
-                let (output_path, time_it_took_in_secs) = scraper
-                    .scrape_channel(channel_id, &save_target)
-                    .await?;
+                let (output_path, time_it_took_in_secs) =
+                    scraper.scrape_channel(channel_id, &save_target).await?;
                 if let Some(path) = output_path {
                     tracing::info!(
                         "Successfully scraped channel `{channel_id}`, took {time_it_took_in_secs}s. Output at `{path:?}`"

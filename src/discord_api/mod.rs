@@ -14,11 +14,25 @@ use std::{
 
 pub struct DiscordAuth {
     token: String,
+    use_personal: bool,
+}
+
+impl DiscordAuth {
+    pub fn new<S: ToString>(token: S, use_personal: bool) -> Self {
+        Self {
+            token: token.to_string(),
+            use_personal,
+        }
+    }
 }
 
 impl Display for DiscordAuth {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "Bot {}", self.token)
+        if self.use_personal {
+            write!(f, "{}", self.token)
+        } else {
+            write!(f, "Bot {}", self.token)
+        }
     }
 }
 
@@ -35,15 +49,11 @@ pub enum DiscordApiError {
     #[error("Failed to send the request, see {0:#?}")]
     SendingRequest(reqwest::Error),
 
-    //#[error("Ratelimited, {0:#?}")]
-    //RateLimited(Option<DiscordApiRatelimitInfo>),
     #[error(transparent)]
     ParseResponse(ParseError),
 
     #[error("Unexpected status code {0}, see: {1:#?}")]
     UnexpectedResponseStatusCode(u16, Option<reqwest::Response>),
-    //#[error("Unexpected error: {0}\n\n{1:#?}")]
-    //Unexpected(String, Option<reqwest::Error>),
 }
 
 #[allow(dead_code)]
@@ -61,12 +71,10 @@ pub enum ParseError {
 }
 
 impl DiscordApi {
-    pub fn new<S: ToString>(token: S) -> Self {
+    pub fn new<S: ToString>(token: S, personal: bool) -> Self {
         Self {
             reqwest_client: reqwest::Client::new(),
-            auth: DiscordAuth {
-                token: token.to_string(),
-            },
+            auth: DiscordAuth::new(token, personal),
         }
     }
 
@@ -83,11 +91,11 @@ impl DiscordApi {
     ) -> Result<Response, DiscordApiError> {
         self.build_request_with_auth_header(
             method,
-            &format!("{DISCORD_API_BASE_URL}/{relative_url}"),
+            &format!("{}/{}", DISCORD_API_BASE_URL, relative_url),
         )
-        .send()
-        .await
-        .map_err(DiscordApiError::SendingRequest)
+            .send()
+            .await
+            .map_err(DiscordApiError::SendingRequest)
     }
 
     fn get_ratelimit_info_from_response_header_map(
@@ -108,7 +116,6 @@ impl DiscordApi {
         {
             let milliseconds_until_ratelimit_reset =
                 (rate_limit_reset_after * 1000_f32).ceil() as u16;
-
             return Some(DiscordApiRatelimitInfo {
                 remaining_limit: ratelimit_remaining,
                 milliseconds_until_ratelimit_reset,
@@ -127,11 +134,10 @@ impl DiscordApi {
                     "Waiting {} milliseconds to respect the rate limit.",
                     ratelimit_info.milliseconds_until_ratelimit_reset
                 );
-
                 tokio::time::sleep(tokio::time::Duration::from_millis(
                     ratelimit_info.milliseconds_until_ratelimit_reset.into(),
                 ))
-                .await;
+                    .await;
             }
         }
     }
