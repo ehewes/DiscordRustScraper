@@ -21,6 +21,11 @@ DiscordRustScraper is a powerful Discord data scraper built in Rust, designed to
     - [sql](#sql-optional)
         - [Schema](#schema)
 </details>
+<br>
+
+**Disclaimer**
+<br>
+DiscordRustScraper is an open-source tool for ethical use, provided "as is." Users must comply with Discord's terms and laws. Not affiliated with Discord.
 
 ---
 
@@ -64,3 +69,4 @@ CREATE TABLE messages (
     PRIMARY KEY (message_id)
 );
 ```
+*Inspired by [DiscordChatExporter](https://github.com/Tyrrrz/DiscordChatExporter).*
