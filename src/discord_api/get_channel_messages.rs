@@ -1,6 +1,6 @@
 use super::{DiscordApi, DiscordApiError, ParseError};
 use reqwest::{Method};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Message {
@@ -21,7 +21,6 @@ impl DiscordApi {
         let url = format!("channels/{}/messages?before={}&limit=100", channel_id, message_id);
         let response = self.request_with_relative_url_and_auth_header(Method::GET, &url).await?;
         let status = response.status().as_u16();
-
         match status {
             200 => {
                 if wait_for_ratelimit {
@@ -43,27 +42,23 @@ impl DiscordApi {
                             .and_then(|author| author.get("id"))
                             .and_then(|id| id.as_str())
                             .and_then(|id| id.parse::<u64>().ok());
-                        let string_content = message_object
+                        let content = message_object
                             .get("content")
                             .and_then(|content| content.as_str())
-                            .map(|content| content.to_string());
+                            .map(|s| s.to_string());
                         let has_media = !message_object
                             .get("attachments")
-                            .and_then(|attach| attach.as_array())
-                            .map(|a| a.is_empty())
+                            .and_then(|att| att.as_array())
+                            .map(|arr| arr.is_empty())
                             .unwrap_or(true);
-
-                        if let (Some(message_id), Some(author_id), Some(string_content)) =
-                            (message_id, author_id, string_content)
-                        {
-                            let message_struct = Message {
+                        if let (Some(mid), Some(aid), Some(text)) = (message_id, author_id, content) {
+                            messages_vec.push(Message {
                                 channel_id,
-                                author_id,
-                                message_id,
-                                message: string_content,
+                                author_id: aid,
+                                message_id: mid,
+                                message: text,
                                 has_media,
-                            };
-                            messages_vec.push(message_struct);
+                            });
                         }
                     }
                 }
@@ -84,7 +79,6 @@ impl DiscordApi {
         let url = format!("channels/{}/messages?limit=100", channel_id);
         let response = self.request_with_relative_url_and_auth_header(Method::GET, &url).await?;
         let status = response.status().as_u16();
-
         match status {
             200 => {
                 if wait_for_ratelimit {
@@ -106,27 +100,23 @@ impl DiscordApi {
                             .and_then(|author| author.get("id"))
                             .and_then(|id| id.as_str())
                             .and_then(|id| id.parse::<u64>().ok());
-                        let string_content = message_object
+                        let content = message_object
                             .get("content")
                             .and_then(|content| content.as_str())
-                            .map(|content| content.to_string());
+                            .map(|s| s.to_string());
                         let has_media = !message_object
                             .get("attachments")
-                            .and_then(|attach| attach.as_array())
-                            .map(|a| a.is_empty())
+                            .and_then(|att| att.as_array())
+                            .map(|arr| arr.is_empty())
                             .unwrap_or(true);
-
-                        if let (Some(message_id), Some(author_id), Some(string_content)) =
-                            (message_id, author_id, string_content)
-                        {
-                            let message_struct = Message {
+                        if let (Some(mid), Some(aid), Some(text)) = (message_id, author_id, content) {
+                            messages_vec.push(Message {
                                 channel_id,
-                                author_id,
-                                message_id,
-                                message: string_content,
+                                author_id: aid,
+                                message_id: mid,
+                                message: text,
                                 has_media,
-                            };
-                            messages_vec.push(message_struct);
+                            });
                         }
                     }
                 }
@@ -136,6 +126,28 @@ impl DiscordApi {
                 status,
                 Some(response),
             )),
+        }
+    }
+    pub async fn get_dm_channels(
+        &self,
+        wait_for_ratelimit: bool,
+    ) -> Result<serde_json::Value, DiscordApiError> {
+        let url = "users/@me/channels".to_string();
+        let response = self.request_with_relative_url_and_auth_header(Method::GET, &url).await?;
+        let status = response.status().as_u16();
+        if status == 200 {
+            if wait_for_ratelimit {
+                DiscordApi::handle_rate_limit_wait(response.headers()).await;
+            }
+            let json_data = response.json::<serde_json::Value>().await.map_err(|error| {
+                DiscordApiError::ParseResponse(ParseError::DeserializeBodyIntoJson(error))
+            })?;
+            Ok(json_data)
+        } else {
+            Err(DiscordApiError::UnexpectedResponseStatusCode(
+                status,
+                Some(response),
+            ))
         }
     }
 }
