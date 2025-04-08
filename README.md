@@ -7,7 +7,27 @@
 ---
 
 ## Description
-DiscordRustScraper is a powerful Discord data scraper built in Rust, designed to extract and format channel data for further analysis. It efficiently scrapes message history from specified channels and outputs it in a clean JSON format for easy processing.
+DiscordRustScraper is a powerful Discord data scraper built in Rust, designed to extract and format channel data for further analysis. It efficiently scrapes message history from specified channels and outputs it in a clean JSON format for easy processing. Optional features include the ability to scrape data from personal accounts, create backups of messages, and store data in a SQL database for improved performance and organization.
+
+<details>
+  <summary>Table of Contents</summary>
+
+- [About](#Description)
+- [Commands \& Usage](#commands--usage)
+    - [Scrape](#scrape)
+    - [Convert-to-json](#convert-to-json)
+    - [personal](#personal-optional)
+        - [backup ](#backup-optionalderived-from-personal)
+    - [sql](#sql-optional)
+        - [Schema](#schema)
+</details>
+<br>
+
+**Disclaimer**
+<br>
+DiscordRustScraper is an open-source tool for ethical use, provided "as is." Users must comply with Discord's terms and laws. Not affiliated with Discord.
+
+---
 
 ## Commands & Usage
 
@@ -27,6 +47,11 @@ For those that do not know how to get your personal discord token, a demonstrati
 - Usage : ``cargo run -- scrape --bot_token <ACCOUNT_TOKEN> --channel_ids [CHANNEL_IDS] --personal``
 - Example : ``cargo run -- scrape --bot_token "your_account_token" --channel_ids 659069446438125570 806378740917469234 --personal``
 
+##### backup (optional)(derived from personal)
+The backup argument is an optional feature that derives from the personal argument. It allows you to create a backup of your personal discord messages,  this feature is particularly useful for people that want to back up their accounts. This does not require specifying channel ids, as it will scrape all channels that you have access to. Additionally, it will store the ids of all your message sessions.
+- Usage : ``cargo run -- scrape --bot_token <ACCOUNT_TOKEN> --personal --backup``
+- Example : ``cargo run -- scrape --bot_token "your_account_token" --personal --backup``
+
 #### sql (optional)
 The SQL argument provides an optional feature that enables the use of a SQL database to store messages instead of the default storage method, by passing through a connection string. This is a more efficient way of storing data compared to JSONs.
 - Usage : ``cargo run -- scrape --bot_token <BOT_TOKEN> --channel_ids [CHANNEL_IDS] --sql <CONNECTION_STRING>``
@@ -44,3 +69,4 @@ CREATE TABLE messages (
     PRIMARY KEY (message_id)
 );
 ```
+*Inspired by [DiscordChatExporter](https://github.com/Tyrrrz/DiscordChatExporter).*

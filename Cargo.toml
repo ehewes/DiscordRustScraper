@@ -1,10 +1,10 @@
 [package]
 name = "discord_rust_scraper"
-version = "1.0.5"
+version = "1.0.6"
 edition = "2021"
 authors = ["ehewes, bordomantra"]
 license = "MIT"
-description = "DiscordRustScraper is a powerful Discord data scraper built in Rust, designed to extract and format channel data for further analysis. It efficiently scrapes message history from specified channels and outputs it in a clean JSON format for easy processing."
+description = "DiscordRustScraper is a powerful Discord data scraper built in Rust, designed to extract and format channel data for further analysis. It efficiently scrapes message history from specified channels and outputs it in a clean JSON format for easy processing. Optional features include the ability to scrape data from personal accounts, create backups of messages, and store data in a SQL database for improved performance and organization."
 readme = "README.md"
 homepage = "https://github.com/ehewes/DiscordRustScraper"
 repository = "https://github.com/ehewes/DiscordRustScraper"
