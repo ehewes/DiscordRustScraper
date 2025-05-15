@@ -87,30 +87,4 @@ impl DiscordApi {
             _ => Err(DiscordApiError::UnexpectedResponseStatusCode(status, Some(response))),
         }
     }
-
-    pub async fn get_dm_channels(
-        &self,
-        wait_for_ratelimit: bool,
-    ) -> Result<serde_json::Value, DiscordApiError> {
-        let url = "users/@me/channels".to_string();
-        let response = self.request_with_relative_url_and_auth_header(Method::GET, &url).await?;
-        let status = response.status().as_u16();
-
-        if status == 401 {
-            println!("Unauthorized: Invalid Token, dms can only be scraped from personal accounts");
-        }
-
-        if status == 200 {
-            if wait_for_ratelimit {
-                DiscordApi::handle_rate_limit_wait(response.headers()).await;
-            }
-            let json_data = response.json::<serde_json::Value>().await.map_err(|error| {
-                DiscordApiError::ParseResponse(ParseError::DeserializeBodyIntoJson(error))
-            })?;
-            Ok(json_data)
-        }
-        else {
-            Err(DiscordApiError::UnexpectedResponseStatusCode(status, Some(response)))
-        }
-    }
 }

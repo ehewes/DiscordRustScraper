@@ -29,10 +29,6 @@ struct Scrape {
     channel_ids: Vec<u64>,
     #[clap(long)]
     sql: Option<String>,
-    #[clap(long)]
-    personal: bool,
-    #[clap(long)]
-    backup: bool,
 }
 
 pub async fn run() -> eyre::Result<()> {
@@ -40,34 +36,29 @@ pub async fn run() -> eyre::Result<()> {
 
     match cli.command {
         Command::Scrape(args) => {
-            let scraper = Scraper::new(args.bot_token, args.personal);
+            let scraper = Scraper::new(args.bot_token, false);
             let save_target = if let Some(database_url) = args.sql {
                 SaveTarget::Sql(database_url)
             } else {
                 SaveTarget::Jsonl
             };
 
-            if args.personal && args.backup {
-                scraper.backup_channels(&save_target).await?;
-                tracing::info!("Backup users and messages saved using the provided save target");
-            } else {
-                for channel_id in args.channel_ids {
-                    let (output_path, duration) =
-                        scraper.scrape_channel(channel_id, &save_target).await?;
-                    if let Some(path) = output_path {
-                        tracing::info!(
-                            "Successfully scraped channel `{}`, took {}s. Output at `{}`",
-                            channel_id,
-                            duration,
-                            path.display()
-                        );
-                    } else {
-                        tracing::info!(
-                            "Successfully scraped channel `{}`, took {}s. Saved to database",
-                            channel_id,
-                            duration
-                        );
-                    }
+            for channel_id in args.channel_ids {
+                let (output_path, duration) =
+                    scraper.scrape_channel(channel_id, &save_target).await?;
+                if let Some(path) = output_path {
+                    tracing::info!(
+                        "Successfully scraped channel `{}`, took {}s. Output at `{}`",
+                        channel_id,
+                        duration,
+                        path.display()
+                    );
+                } else {
+                    tracing::info!(
+                        "Successfully scraped channel `{}`, took {}s. Saved to database",
+                        channel_id,
+                        duration
+                    );
                 }
             }
         }

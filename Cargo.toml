@@ -1,6 +1,6 @@
 [package]
 name = "discord_rust_scraper"
-version = "1.0.6"
+version = "1.0.7"
 edition = "2021"
 authors = ["ehewes, bordomantra"]
 license = "MIT"
