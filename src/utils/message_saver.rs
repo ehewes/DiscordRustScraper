@@ -3,6 +3,7 @@ use async_trait::async_trait;
 use color_eyre::eyre::Result;
 use tokio::io::{AsyncWriteExt, BufWriter};
 use tokio::fs::{File, OpenOptions};
+use serde_json;
 
 pub enum SaveTarget {
     Jsonl,
@@ -57,14 +58,30 @@ impl SqlSaver {
 impl MessageSaver for SqlSaver {
     async fn save_messages(&mut self, messages: &[Message]) -> Result<()> {
         for message in messages {
+            let attachment_urls = serde_json::to_string(&message.attachment_urls).unwrap_or_default();
+            let reactions = serde_json::to_string(&message.reactions).unwrap_or_default();
             sqlx::query(
-                "INSERT INTO messages (channel_id, author_id, message_id, message, has_media) VALUES (?, ?, ?, ?, ?)"
+                "INSERT INTO messages \
+                 (channel_id, channel_name, author_id, author_name, message_id, message, has_media, \
+                  timestamp, edited_timestamp, reply_to_message_id, message_type, pinned, \
+                  attachment_urls, embed_count, reactions) \
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
             )
             .bind(message.channel_id)
+            .bind(&message.channel_name)
             .bind(message.author_id)
+            .bind(&message.author_name)
             .bind(message.message_id)
             .bind(&message.message)
             .bind(message.has_media)
+            .bind(&message.timestamp)
+            .bind(&message.edited_timestamp)
+            .bind(message.reply_to_message_id)
+            .bind(message.message_type)
+            .bind(message.pinned)
+            .bind(attachment_urls)
+            .bind(message.embed_count)
+            .bind(reactions)
             .execute(&self.pool)
             .await?;
         }

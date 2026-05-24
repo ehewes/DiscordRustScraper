@@ -78,13 +78,14 @@ impl Scraper {
         &self,
         channel_id: u64,
         message_id: u64,
+        channel_name: String,
         use_personal: bool,
     ) -> Result<Vec<crate::discord_api::Message>, ScraperError> {
         let possible_messages = if message_id == 0 {
-            self.discord_api_client.get_channel_msgs(channel_id, use_personal).await
+            self.discord_api_client.get_channel_msgs(channel_id, channel_name.clone(), use_personal).await
         } else {
             self.discord_api_client
-                .get_channel_msgs_before_msg(channel_id, message_id, use_personal)
+                .get_channel_msgs_before_msg(channel_id, message_id, channel_name.clone(), use_personal)
                 .await
         };
         match possible_messages {
@@ -98,7 +99,7 @@ impl Scraper {
                         );
                         time::sleep(time::Duration::from_secs(SECONDS_TO_WAIT_IN_CASE_OF_HTTP_503 as u64))
                             .await;
-                        return self.scrape_msgs_before_msg(channel_id, message_id, use_personal).await;
+                        return self.scrape_msgs_before_msg(channel_id, message_id, channel_name, use_personal).await;
                     }
                     Err(ScraperError::DiscordApiError(
                         DiscordApiError::UnexpectedResponseStatusCode(status_code, response),
@@ -129,7 +130,7 @@ impl Scraper {
         let format_request = !channel_name.starts_with("dm_");
         loop {
             let messages = self
-                .scrape_msgs_before_msg(channel_id, last_message_id, format_request)
+                .scrape_msgs_before_msg(channel_id, last_message_id, channel_name.clone(), format_request)
                 .await?;
             if let Some(last_message) = messages.last() {
                 last_message_id = last_message.message_id;
