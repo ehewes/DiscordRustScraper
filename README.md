@@ -48,12 +48,21 @@ The SQL argument provides an optional feature that enables the use of a SQL data
 You'll have to create the database yourself so i've attached the schema below. 
 ```sql
 CREATE TABLE messages (
-    channel_id BIGINT UNSIGNED NOT NULL,
-    author_id BIGINT UNSIGNED NOT NULL,
-    message_id BIGINT UNSIGNED NOT NULL,
-    message TEXT NOT NULL,
-    has_media BOOLEAN NOT NULL,
+    channel_id   BIGINT UNSIGNED NOT NULL,
+    channel_name VARCHAR(100)    NOT NULL DEFAULT '',
+    author_id    BIGINT UNSIGNED NOT NULL,
+    author_name  VARCHAR(64)     NOT NULL DEFAULT '',
+    message_id   BIGINT UNSIGNED NOT NULL,
+    message      TEXT            NOT NULL,
+    has_media    BOOLEAN         NOT NULL,
     PRIMARY KEY (message_id)
 );
+```
+
+To migrate an existing table:
+```sql
+ALTER TABLE messages
+    ADD COLUMN channel_name VARCHAR(100) NOT NULL DEFAULT '' AFTER channel_id,
+    ADD COLUMN author_name  VARCHAR(64)  NOT NULL DEFAULT '' AFTER author_id;
 ```
 *Inspired by [DiscordChatExporter](https://github.com/Tyrrrz/DiscordChatExporter).*
