@@ -48,13 +48,21 @@ The SQL argument provides an optional feature that enables the use of a SQL data
 You'll have to create the database yourself so i've attached the schema below. 
 ```sql
 CREATE TABLE messages (
-    channel_id   BIGINT UNSIGNED NOT NULL,
-    channel_name VARCHAR(100)    NOT NULL DEFAULT '',
-    author_id    BIGINT UNSIGNED NOT NULL,
-    author_name  VARCHAR(64)     NOT NULL DEFAULT '',
-    message_id   BIGINT UNSIGNED NOT NULL,
-    message      TEXT            NOT NULL,
-    has_media    BOOLEAN         NOT NULL,
+    channel_id          BIGINT UNSIGNED  NOT NULL,
+    channel_name        VARCHAR(100)     NOT NULL DEFAULT '',
+    author_id           BIGINT UNSIGNED  NOT NULL,
+    author_name         VARCHAR(64)      NOT NULL DEFAULT '',
+    message_id          BIGINT UNSIGNED  NOT NULL,
+    message             TEXT             NOT NULL,
+    has_media           BOOLEAN          NOT NULL,
+    timestamp           VARCHAR(64)      NOT NULL DEFAULT '',
+    edited_timestamp    VARCHAR(64)      NULL,
+    reply_to_message_id BIGINT UNSIGNED  NULL,
+    message_type        TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    pinned              BOOLEAN          NOT NULL DEFAULT 0,
+    attachment_urls     TEXT             NULL,
+    embed_count         INT UNSIGNED     NOT NULL DEFAULT 0,
+    reactions           TEXT             NULL,
     PRIMARY KEY (message_id)
 );
 ```
@@ -62,7 +70,15 @@ CREATE TABLE messages (
 To migrate an existing table:
 ```sql
 ALTER TABLE messages
-    ADD COLUMN channel_name VARCHAR(100) NOT NULL DEFAULT '' AFTER channel_id,
-    ADD COLUMN author_name  VARCHAR(64)  NOT NULL DEFAULT '' AFTER author_id;
+    ADD COLUMN channel_name        VARCHAR(100)     NOT NULL DEFAULT '' AFTER channel_id,
+    ADD COLUMN author_name         VARCHAR(64)      NOT NULL DEFAULT '' AFTER author_id,
+    ADD COLUMN timestamp           VARCHAR(64)      NOT NULL DEFAULT '' AFTER has_media,
+    ADD COLUMN edited_timestamp    VARCHAR(64)      NULL                AFTER timestamp,
+    ADD COLUMN reply_to_message_id BIGINT UNSIGNED  NULL                AFTER edited_timestamp,
+    ADD COLUMN message_type        TINYINT UNSIGNED NOT NULL DEFAULT 0  AFTER reply_to_message_id,
+    ADD COLUMN pinned              BOOLEAN          NOT NULL DEFAULT 0  AFTER message_type,
+    ADD COLUMN attachment_urls     TEXT             NULL                AFTER pinned,
+    ADD COLUMN embed_count         INT UNSIGNED     NOT NULL DEFAULT 0  AFTER attachment_urls,
+    ADD COLUMN reactions           TEXT             NULL                AFTER embed_count;
 ```
 *Inspired by [DiscordChatExporter](https://github.com/Tyrrrz/DiscordChatExporter).*
